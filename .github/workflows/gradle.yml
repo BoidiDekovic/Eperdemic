@@ -1,0 +1,70 @@
+# This workflow will build a Java project with Gradle
+# For more information see: https://help.github.com/actions/language-and-framework-guides/building-and-testing-java-with-gradle
+
+name: Kotlin CI with Gradle
+
+on:
+  push:
+    tags:
+      - "*"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up JDK
+        uses: actions/setup-java@v2
+        with:
+          java-version: '11'
+          distribution: 'adopt'
+
+      - name: Set up MySQL Database
+        run: docker run -p 3306:3306 -e MYSQL_ROOT_PASSWORD=root -d mysql --default-authentication-plugin=mysql_native_password -h 127.0.0.1
+
+      - name: Set up Neo4J Database
+        run: docker run -p 7474:7474 -p 7687:7687 -e NEO4J_AUTH=neo4j/rootroot -d neo4j
+
+      - name: Set up MongoDB Database
+        run: docker run -p 27017:27017 -d mongo
+
+      - name: Extract tag name
+        run: fullTagName=${{ github.ref }} && path='refs/tags/' && a='' && tagName=${fullTagName/$path/$a} && echo $tagName && echo "##[set-output name=tagName;]$tagName"
+        id: tagName
+        
+      - name: Make Gradle Wrapper executable
+        run: chmod +x ./gradlew
+
+      - name: Run tests
+        run: ./gradlew test
+
+      - name: Success notification
+        if: success()
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+          DISCORD_USERNAME: ${{ github.repository }}
+          DISCORD_AVATAR: https://www.iconsdb.com/icons/preview/green/github-9-xxl.png
+        uses: EPERS-UNQ/action-discord@master
+        with:
+          fields: '[{"name":"Proyecto",  "value":" [{{ EVENT_PAYLOAD.repository.name }}]({{ EVENT_PAYLOAD.repository.url }}) ", "inline": true}, {"name":"Tag",  "value":"[${{ steps.tagName.outputs.tagName }}](https://github.com/${{ github.repository }}/releases/tag/${{ steps.tagName.outputs.tagName }})", "inline": true}]'
+          title: ':green_circle: Entrega exitosa'
+          color: 3258062
+          author: true
+          includeCommits: true
+
+      - name: Failure notification
+        if: failure()
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+          DISCORD_USERNAME: ${{ github.repository }}
+          DISCORD_AVATAR: https://www.iconsdb.com/icons/preview/red/github-10-xxl.png
+        uses: EPERS-UNQ/action-discord@master
+        with:
+          fields: '[{"name":"Proyecto",  "value":" [{{ EVENT_PAYLOAD.repository.name }}]({{ EVENT_PAYLOAD.repository.url }}) ", "inline": true},{"name":"Tag",  "value":"[${{ steps.tagName.outputs.tagName }}](https://github.com/${{ github.repository }}/releases/tag/${{ steps.tagName.outputs.tagName }})", "inline": true}]'
+          title: ':red_circle: Entrega fallida'
+          color: 9503748
+          author: true
+          includeCommits: true

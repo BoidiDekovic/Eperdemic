@@ -1,0 +1,51 @@
+plugins {
+    id 'java'
+    id 'org.jetbrains.kotlin.jvm' version '1.8.0'
+    id 'org.jetbrains.kotlin.plugin.jpa' version '1.8.20'
+    id 'org.springframework.boot' version '2.7.11'
+    id 'io.spring.dependency-management' version '1.1.0'
+    id 'org.jetbrains.kotlin.plugin.spring' version '1.8.20'
+}
+
+group 'ar.edu.unq.eperdemic'
+version '1.0-SNAPSHOT'
+
+sourceCompatibility = 11
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter', version: '5.9.2'
+    testImplementation group: 'org.mockito', name: 'mockito-core', version: '5.5.0'
+
+    implementation group: 'mysql', name: 'mysql-connector-java', version: '8.0.19'
+
+    implementation("org.springframework.boot:spring-boot-starter-data-mongodb")
+    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web'
+    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-aop'
+    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-data-jpa'
+    testImplementation group: 'org.springframework.boot', name: 'spring-boot-starter-test'
+    implementation group: 'com.fasterxml.jackson.module', name: 'jackson-module-kotlin'
+
+    implementation 'com.google.firebase:firebase-admin:9.2.0'
+    implementation group: 'com.fasterxml.uuid', name: 'java-uuid-generator', version: '3.1.0'
+
+    implementation("org.springframework.boot:spring-boot-starter-data-neo4j")
+    implementation("org.jetbrains.kotlin:kotlin-reflect")
+    developmentOnly("org.springframework.boot:spring-boot-devtools")
+}
+
+tasks.test {
+    useJUnitPlatform()
+}
+
+
+compileKotlin {
+    kotlinOptions.jvmTarget = "11"
+}
+compileTestKotlin {
+    kotlinOptions.jvmTarget = "11"
+}
